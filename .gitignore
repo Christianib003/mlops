@@ -1,2 +1,5 @@
 # Python version file
 .python-version
+
+# Python environment files
+/venv
