@@ -5,3 +5,6 @@ Pillow
 matplotlib
 jupyterlab
 seaborn
+fastapi
+uvicorn[standard]
+python-multipart
