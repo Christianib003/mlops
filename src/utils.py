@@ -1,6 +1,7 @@
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
 
 
 def load_and_split_data(train_dir, val_dir, image_size, batch_size):
@@ -34,7 +35,8 @@ def load_and_split_data(train_dir, val_dir, image_size, batch_size):
         label_mode='categorical',
         image_size=image_size,
         batch_size=batch_size,
-        shuffle=False
+        shuffle=True,
+        seed=123
     )
     
     class_names = training_set.class_names
@@ -70,3 +72,55 @@ def count_samples(dataset, class_names):
         class_name = class_names[class_index]
         class_counts[class_name] += 1
     return class_counts
+
+
+def plot_history(history):
+    """
+    Plots the training and validation accuracy and loss.
+
+    Args:
+        history: A Keras History object.
+    """
+    acc = history.history['accuracy']
+    val_acc = history.history['val_accuracy']
+    loss = history.history['loss']
+    val_loss = history.history['val_loss']
+
+    plt.figure(figsize=(12, 5))
+    plt.subplot(1, 2, 1)
+    plt.plot(acc, label='Training Accuracy')
+    plt.plot(val_acc, label='Validation Accuracy')
+    plt.title('Training and Validation Accuracy')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.legend(loc='lower right')
+
+    plt.subplot(1, 2, 2)
+    plt.plot(loss, label='Training Loss')
+    plt.plot(val_loss, label='Validation Loss')
+    plt.title('Training and Validation Loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.legend(loc='upper right')
+
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_confusion_matrix(y_true, y_pred, class_names):
+    """
+    Plots a confusion matrix using seaborn.
+
+    Args:
+        y_true (array): Array of true labels.
+        y_pred (array): Array of predicted labels.
+        class_names (list): List of class names.
+    """
+    cm = tf.math.confusion_matrix(labels=y_true, predictions=y_pred).numpy()
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
+                xticklabels=class_names, yticklabels=class_names)
+    plt.xlabel('Predicted Label')
+    plt.ylabel('True Label')
+    plt.title('Confusion Matrix')
+    plt.show()
