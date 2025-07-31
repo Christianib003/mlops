@@ -70,3 +70,51 @@ def count_samples(dataset, class_names):
         class_name = class_names[class_index]
         class_counts[class_name] += 1
     return class_counts
+
+
+def build_model(num_classes):
+    """
+    Builds and compiles a transfer learning model using MobileNetV2.
+
+    Args:
+        num_classes (int): The number of output classes for the final layer.
+
+    Returns:
+        tf.keras.Model: The compiled Keras model.
+    """
+    input_shape = (224, 224, 3)
+    
+    # Load the MobileNetV2 base model
+    base_model = tf.keras.applications.MobileNetV2(
+        input_shape=input_shape,
+        include_top=False,
+        weights='imagenet'
+    )
+    # Freeze the base model
+    base_model.trainable = False
+
+    # Create the input layer
+    inputs = tf.keras.Input(shape=input_shape)
+    
+    # Apply the MobileNetV2 specific preprocessing
+    x = tf.keras.applications.mobilenet_v2.preprocess_input(inputs)
+    
+    # Pass the preprocessed input to the base model
+    x = base_model(x, training=False)
+    
+    # Add our custom layers
+    x = tf.keras.layers.GlobalAveragePooling2D()(x)
+    x = tf.keras.layers.Dropout(0.2)(x)
+    outputs = tf.keras.layers.Dense(num_classes, activation='softmax')(x)
+    
+    # Create the final model
+    model = tf.keras.Model(inputs, outputs)
+    
+    # Compile the model
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(),
+        loss='categorical_crossentropy',
+        metrics=['accuracy', tf.keras.metrics.Precision(), tf.keras.metrics.Recall()]
+    )
+    
+    return model
