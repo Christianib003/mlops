@@ -35,7 +35,8 @@ def load_and_split_data(train_dir, val_dir, image_size, batch_size):
         label_mode='categorical',
         image_size=image_size,
         batch_size=batch_size,
-        shuffle=False
+        shuffle=True,
+        seed=123
     )
     
     class_names = training_set.class_names
