@@ -152,3 +152,22 @@ def plot_history(history):
 
     plt.tight_layout()
     plt.show()
+
+
+def plot_confusion_matrix(y_true, y_pred, class_names):
+    """
+    Plots a confusion matrix using seaborn.
+
+    Args:
+        y_true (array): Array of true labels.
+        y_pred (array): Array of predicted labels.
+        class_names (list): List of class names.
+    """
+    cm = tf.math.confusion_matrix(labels=y_true, predictions=y_pred).numpy()
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
+                xticklabels=class_names, yticklabels=class_names)
+    plt.xlabel('Predicted Label')
+    plt.ylabel('True Label')
+    plt.title('Confusion Matrix')
+    plt.show()
