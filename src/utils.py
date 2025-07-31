@@ -2,6 +2,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np
 
+
 def load_and_split_data(train_dir, val_dir, image_size, batch_size):
     """
     Loads and splits data into training, validation, and test sets.
@@ -47,6 +48,7 @@ def load_and_split_data(train_dir, val_dir, image_size, batch_size):
     
     return training_set, validation_set, test_set, class_names
 
+
 def plot_batch(dataset, class_names):
     """Visualizes a batch of images from a dataset."""
     plt.figure(figsize=(12, 12))
@@ -57,3 +59,14 @@ def plot_batch(dataset, class_names):
             plt.title(class_names[np.argmax(labels[i])])
             plt.axis("off")
     plt.show()
+
+
+def count_samples(dataset, class_names):
+    """Counts the number of samples for each class in a dataset."""
+    class_counts = {name: 0 for name in class_names}
+    # unbatch the dataset to count individual images
+    for _, labels in dataset.unbatch(): 
+        class_index = np.argmax(labels.numpy())
+        class_name = class_names[class_index]
+        class_counts[class_name] += 1
+    return class_counts
