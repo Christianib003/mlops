@@ -1,3 +1,7 @@
+from PIL import Image
+import pandas as pd
+import os
+import random
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np
@@ -124,3 +128,52 @@ def plot_confusion_matrix(y_true, y_pred, class_names):
     plt.ylabel('True Label')
     plt.title('Confusion Matrix')
     plt.show()
+
+
+def get_dataset_insights(data_dir, sample_size=100):
+    """
+    Analyzes the dataset to generate insights for visualization.
+
+    Args:
+        data_dir (str): Path to the training data directory.
+        sample_size (int): Number of images to sample per class for analysis.
+
+    Returns:
+        dict: A dictionary containing data for class distribution, dimensions, and colors.
+    """
+    insights = {
+        "class_distribution": {},
+        "image_dimensions": [],
+        "average_colors": {}
+    }
+    class_names = [d for d in os.listdir(data_dir) if os.path.isdir(os.path.join(data_dir, d))]
+
+    for class_name in class_names:
+        class_path = os.path.join(data_dir, class_name)
+        image_files = os.listdir(class_path)
+        
+        insights["class_distribution"][class_name] = len(image_files)
+        
+        if len(image_files) > sample_size:
+            image_files_sample = random.sample(image_files, sample_size)
+        else:
+            image_files_sample = image_files
+        
+        class_colors = []
+        for image_file in image_files_sample:
+            try:
+                with Image.open(os.path.join(class_path, image_file)) as img:
+                    insights["image_dimensions"].append({
+                        "width": img.width,
+                        "height": img.height,
+                        "class": class_name
+                    })
+                    img_thumb = img.resize((50, 50))
+                    class_colors.append(np.mean(np.array(img_thumb), axis=(0, 1)))
+            except Exception:
+                continue
+        
+        if class_colors:
+            insights["average_colors"][class_name] = np.mean(class_colors, axis=0)
+            
+    return insights

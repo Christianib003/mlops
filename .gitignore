@@ -6,3 +6,9 @@
 
 # Python cache files
 __pycache__/
+
+# Testing files
+data/new_uploads/
+
+# macOS files
+.DS_Store
