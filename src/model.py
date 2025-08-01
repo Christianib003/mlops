@@ -1,6 +1,10 @@
+import numpy as np
 import tensorflow as tf
 import os
+import pathlib
 from src.utils import load_and_split_data
+from src.prediction import CLASS_NAMES 
+
 
 def build_model(num_classes):
     """
@@ -32,14 +36,13 @@ def build_model(num_classes):
     
     return model
 
-def retrain_model():
+def train_model():
     """
-    Loads the existing model and continues training it on the dataset.
-    This simulates a retraining pipeline.
+    Builds and trains a new model on the full original dataset.
+    This is the main 'Train' functionality.
     """
-    print("--- Starting Model Retraining ---")
+    print("--- Starting Full Model Training ---")
     
-    # 1. Define Constants
     IMAGE_SIZE = (224, 224)
     BATCH_SIZE = 32
     MODEL_PATH = 'models/plant_classifier_v1.keras'
@@ -47,42 +50,80 @@ def retrain_model():
     TRAIN_DIR = os.path.join(DATA_DIR, 'train')
     VAL_DIR = os.path.join(DATA_DIR, 'val')
 
-    # 2. Load the Data
-    print("Loading and preparing data...")
-    training_set, validation_set, _, _ = load_and_split_data(
+    print("Loading original dataset...")
+    training_set, validation_set, _, class_names = load_and_split_data(
         train_dir=TRAIN_DIR,
         val_dir=VAL_DIR,
         image_size=IMAGE_SIZE,
         batch_size=BATCH_SIZE
     )
 
-    # 3. Load the Existing Model
-    print(f"Loading existing model from {MODEL_PATH}...")
-    model = tf.keras.models.load_model(MODEL_PATH)
+    print("Building a new model...")
+    model = build_model(num_classes=len(class_names))
     
-    # 4. Continue Training the Model
-    print("Continuing training...")
-    early_stopping = tf.keras.callbacks.EarlyStopping(
-        monitor='val_loss', 
-        patience=3, 
-        restore_best_weights=True
-    )
+    print("Training the model...")
+    early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
     
-    history = model.fit(
+    model.fit(
         training_set,
         validation_data=validation_set,
-        epochs=10, 
+        epochs=50, 
         callbacks=[early_stopping]
     )
 
-    # 5. Save the Newly Retrained Model
-    print(f"Saving updated model to {MODEL_PATH}...")
+    print(f"Saving trained model to {MODEL_PATH}...")
     model.save(MODEL_PATH)
-    print("--- Model retraining complete. ---")
-    
-    return history
+    print("--- Full model training complete. ---")
+    return model
 
-if __name__ == '__main__':
-    # This allows you to test the retraining process directly
-    # from the terminal: `python src/model.py`
-    retrain_model()
+def retrain_on_new_images(new_data_dir):
+    """
+    Loads the existing model and fine-tunes it using a custom data pipeline
+    to handle subsets of new data.
+    """
+    print(f"--- Starting Retraining on New Images from {new_data_dir} ---")
+    
+    IMAGE_SIZE = (224, 224)
+    BATCH_SIZE = 8
+    MODEL_PATH = 'models/plant_classifier_v1.keras'
+    RETRAINED_MODEL_PATH = 'models/plant_classifier_v1_retrained.keras'
+
+    print("Building custom data pipeline for new images...")
+    
+    data_dir = pathlib.Path(new_data_dir)
+    
+    image_paths = list(data_dir.glob('*/*.*'))
+    image_paths = [str(path) for path in image_paths]
+    
+    if not image_paths:
+        raise ValueError("No images found in the new data directory.")
+
+    path_ds = tf.data.Dataset.from_tensor_slices(image_paths)
+    
+    ALL_CLASS_NAMES = np.array(CLASS_NAMES)
+
+    def process_path(file_path):
+        parts = tf.strings.split(file_path, os.path.sep)
+        label_str = parts[-2]
+        
+        label = tf.argmax(label_str == ALL_CLASS_NAMES)
+        label = tf.one_hot(label, len(ALL_CLASS_NAMES))
+        
+        img = tf.io.read_file(file_path)
+        img = tf.io.decode_image(img, channels=3, expand_animations=False)
+        img = tf.image.resize(img, IMAGE_SIZE)
+        
+        return img, label
+
+    new_data_set = path_ds.map(process_path, num_parallel_calls=tf.data.AUTOTUNE)
+    new_data_set = new_data_set.batch(BATCH_SIZE).prefetch(buffer_size=tf.data.AUTOTUNE)
+
+    print(f"Loading existing model from {MODEL_PATH}...")
+    model = tf.keras.models.load_model(MODEL_PATH)
+
+    print("Fine-tuning the model on new data...")
+    model.fit(new_data_set, epochs=10)
+
+    print(f"Saving retrained model to {RETRAINED_MODEL_PATH}...")
+    model.save(RETRAINED_MODEL_PATH)
+    print("--- Retraining on new images complete. ---")
