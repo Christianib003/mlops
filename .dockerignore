@@ -1,0 +1,12 @@
+# Git and IDE files
+.git/
+.vscode/
+.idea/
+
+# Python virtual environment and cache
+.venv/
+__pycache__/
+
+# Notebooks and other non-essential files
+notebooks/
+*.md
