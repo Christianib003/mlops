@@ -2,6 +2,7 @@ import numpy as np
 import tensorflow as tf
 import os
 import pathlib
+from datetime import datetime
 from src.utils import load_and_split_data
 from src.prediction import CLASS_NAMES 
 
@@ -86,7 +87,8 @@ def retrain_on_new_images(new_data_dir):
     IMAGE_SIZE = (224, 224)
     BATCH_SIZE = 8
     MODEL_PATH = 'models/plant_classifier_v1.keras'
-    RETRAINED_MODEL_PATH = 'models/plant_classifier_v1_retrained.keras'
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    RETRAINED_MODEL_PATH = f'models/plant_classifier_retrained_{timestamp}.keras'
 
     print("Building custom data pipeline for new images...")
     
