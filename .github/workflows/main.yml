@@ -23,4 +23,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/plant-disease-app:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/plant-disease-classification:latest
