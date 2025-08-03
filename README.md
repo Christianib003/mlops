@@ -8,7 +8,7 @@ The solution encompasses the entire machine learning lifecycle, starting from in
 
 ## 2. Live Application & Demo
 * **Live Application URL:** https://huggingface.co/spaces/Christianib003/plant-disease-classifier
-
+* **API Application URL:** https://christianib003-plant-classifier-api.hf.space/docs
 * **Public Docker Image:** https://hub.docker.com/r/christianib003/plant-disease-classification
 
 * **Video Demo::** A YouTube link to a video demonstration will be added here once recorded.]
@@ -195,17 +195,20 @@ To ensure the application is portable, reproducible, and isolated from the under
 - **Deployment Platform:** The containerized application was deployed on **Hugging Face** Spaces. The Space was configured to pull the latest image directly from the public Docker Hub repository. This platform was chosen for its seamless integration with Docker, its generous free tier for hosting ML applications, and its simplicity for public deployment.
 
 ### 6.2. Performance Simulation (Load Testing)
-To evaluate how the deployed application performs under pressure, a load test was conducted using Locust, a modern open-source load testing tool. The test simulated multiple users concurrently uploading images to the `/predict` endpoint.
 
-    *[Placeholder: The screenshot of the Locust performance charts will be embedded here.]
+To evaluate how the deployed API performs under pressure, a load test was conducted using **Locust**. The test simulated 10 concurrent users sending prediction requests to the deployed API endpoint.
 
-    Test Parameters:
+![Locust Performance Overview](assets/performance_overview.png)
+![Locust Performance Charts](assets/performance_metrics.jpeg)
 
-    Number of Users: 10
+**Test Parameters:**
+* **Number of Users:** 10
+* **Spawn Rate:** 3 users per second
+* **Host:** Deployed API on Hugging Face Spaces
 
-    Spawn Rate: 1 user per second
+**Analysis of Results:**
+The load test was successful, with **0% failures** over the duration of the test, indicating that the application is stable under the simulated load.
 
-    Duration: ~1 minute
-
-    Analysis:
-    [Placeholder: A detailed analysis of the Locust test results will be written here once the screenshot is provided. This will include an interpretation of the response times, requests per second (RPS), and any failures. It will also discuss how the application's performance on a single container instance could be improved by scaling horizontally (adding more containers) in a production environment.]*
+* **Throughput:** The application stabilized at a throughput of approximately **3 Requests Per Second (RPS)**. This is a solid performance for a deep learning model running on the free-tier CPU hardware provided by the deployment platform.
+* **Response Time:** The median response time was consistently below **500ms**, and the 95th percentile response time (meaning 95% of requests were faster than this value) stabilized at around **730ms**. This demonstrates that the API is highly responsive for individual users.
+* **Scalability:** The current performance is limited by the resources of a single container. In a production environment, this application could be scaled horizontally by increasing the number of container instances. This would significantly increase the total RPS the system could handle, allowing it to serve a much larger number of concurrent users.
