@@ -5,6 +5,8 @@ This project demonstrates a full end-to-end Machine Learning Operations (MLOps) 
 
 The solution encompasses the entire machine learning lifecycle, starting from initial data acquisition and exploratory analysis, through model development using transfer learning, and culminating in a containerized deployment. The final product is an interactive web application that allows users to get real-time predictions, view data insights, and trigger model retraining cycles, showcasing a complete and practical application of MLOps principles.
 
+![Application Screenshot](assets/app_screenshot.jpeg)
+
 
 ## 2. Live Application & Demo
 * **Live Application URL:** https://huggingface.co/spaces/Christianib003/plant-disease-classifier
