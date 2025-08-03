@@ -4,6 +4,7 @@ import logging
 import os
 import shutil
 from typing import List
+from datetime import datetime
 
 from src.prediction import predict_single, CLASS_NAMES
 from src.model import train_model, retrain_on_new_images
@@ -11,6 +12,7 @@ from src.model import train_model, retrain_on_new_images
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 app = FastAPI(title="Plant Disease Classifier API")
+START_TIME = datetime.utcnow()
 
 
 @app.get("/", tags=["Welcome"])
@@ -41,6 +43,16 @@ async def predict_image(file: UploadFile = File(...)):
     except Exception as e:
         logger.error(f"Error during prediction: {e}")
         raise HTTPException(status_code=500, detail="An error occurred during prediction.")
+
+
+@app.get("/status/", tags=["Status"])
+def get_status():
+    """Returns the current status and uptime of the API."""
+    uptime = datetime.utcnow() - START_TIME
+    return {
+        "status": "online",
+        "uptime_seconds": uptime.total_seconds()
+    }
 
 
 @app.post("/retrain/", tags=["Retraining"])

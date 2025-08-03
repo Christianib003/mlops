@@ -10,6 +10,9 @@ from PIL import Image
 import pandas as pd
 import os
 import pathlib
+from datetime import timedelta
+from streamlit_autorefresh import st_autorefresh
+
 
 from src.utils import get_dataset_insights
 
@@ -21,6 +24,15 @@ st.set_page_config(
 
 PREDICT_API_URL = "http://127.0.0.1:8000/predict/"
 RETRAIN_API_URL = "http://127.0.0.1:8000/retrain/"
+STATUS_API_URL = "http://127.0.0.1:8000/status/"
+
+def format_uptime(seconds):
+    """Formats uptime in seconds to a human-readable string."""
+    delta = timedelta(seconds=seconds)
+    days = delta.days
+    hours, rem = divmod(delta.seconds, 3600)
+    minutes, seconds = divmod(rem, 60)
+    return f"{days}d {hours}h {minutes}m {seconds}s"
 
 @st.cache_data
 def load_insights():
@@ -29,6 +41,24 @@ def load_insights():
     if train_dir.exists():
         return get_dataset_insights(str(train_dir))
     return None
+
+with st.sidebar:
+    st_autorefresh(interval=1000, key="status_refresher")
+
+    st.header("API Status")
+    try:
+        response = requests.get(STATUS_API_URL)
+        if response.status_code == 200:
+            status_data = response.json()
+            st.success("● Online")
+            uptime_str = format_uptime(status_data['uptime_seconds'])
+            st.metric(label="Model Uptime", value=uptime_str)
+        else:
+            st.error("● Offline")
+            st.write(f"Status Code: {response.status_code}")
+    except requests.exceptions.ConnectionError:
+        st.error("● Offline")
+        st.write("Connection to API failed.")
 
 st.title("🌿 Plant Disease Classifier")
 st.write("An end-to-end MLOps project to classify plant diseases from leaf images.")
