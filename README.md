@@ -13,7 +13,7 @@ The solution encompasses the entire machine learning lifecycle, starting from in
 * **API Application URL:** https://christianib003-plant-classifier-api.hf.space/docs
 * **Public Docker Image:** https://hub.docker.com/r/christianib003/plant-disease-classification
 
-* **Video Demo::** A YouTube link to a video demonstration will be added here once recorded.]
+* **Video Demo::** https://youtu.be/o40tmCUXMz8
 
 
 ## 3. Getting Started
